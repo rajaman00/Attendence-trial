@@ -69,7 +69,16 @@
         <option value="Company C">Company C</option>
       </select>
       
-      <!-- Department Dropdown (populated from local storage) -->
+      <!-- Office Dropdown -->
+      <label for="office">Office:</label>
+      <select id="office" required>
+        <option value="">Select Office</option>
+        <option value="Vidhyut Bhavan">Vidhyut Bhavan</option>
+        <option value="Office X">Office X</option>
+        <option value="Office Y">Office Y</option>
+      </select>
+      
+      <!-- Department Dropdown (conditionally populated) -->
       <label for="department">Department:</label>
       <select id="department" required>
         <option value="">Select Department</option>
@@ -91,6 +100,9 @@
       <label for="empName">Employee Name:</label>
       <input type="text" id="empName" required />
       
+      <label for="attId">Attendance ID:</label>
+      <input type="text" id="attId" required />
+      
       <button type="submit">Save Employee</button>
     </form>
   </div>
@@ -102,10 +114,12 @@
       <thead>
         <tr>
           <th>Company</th>
+          <th>Office</th>
           <th>Department</th>
           <th>Designation</th>
           <th>Old Emp ID</th>
           <th>New Emp ID</th>
+          <th>Attendance ID</th>
           <th>Name</th>
           <th>Action</th>
         </tr>
@@ -131,14 +145,16 @@
     const employeeForm = document.getElementById('employeeForm');
     const empIndex = document.getElementById('empIndex');
     const companyEl = document.getElementById('company');
+    const officeEl = document.getElementById('office');
     const departmentEl = document.getElementById('department');
     const designationEl = document.getElementById('designation');
     const oldEmpIdEl = document.getElementById('oldEmpId');
     const newEmpIdEl = document.getElementById('newEmpId');
     const empNameEl = document.getElementById('empName');
+    const attIdEl = document.getElementById('attId');
     const empTableBody = document.getElementById('empTable').querySelector('tbody');
     
-    // Populate department dropdown from local storage
+    // Populate department dropdown from local storage (for Vidhyut Bhavan)
     function populateDepartmentDropdown() {
       departmentEl.innerHTML = '<option value="">Select Department</option>';
       departments.forEach(dept => {
@@ -161,9 +177,26 @@
       });
     }
     
-    // Initial population of dropdowns
-    populateDepartmentDropdown();
+    // Call initial population functions
     populateDesignationDropdown();
+    
+    // When Office selection changes, update Department dropdown behavior
+    officeEl.addEventListener('change', function() {
+      const selectedOffice = officeEl.value;
+      if (selectedOffice === "Vidhyut Bhavan") {
+        // Enable dropdown and populate from local storage
+        departmentEl.disabled = false;
+        populateDepartmentDropdown();
+      } else if (selectedOffice) {
+        // Set department value same as office and disable the dropdown
+        departmentEl.innerHTML = `<option value="${selectedOffice}">${selectedOffice}</option>`;
+        departmentEl.disabled = true;
+      } else {
+        // Reset if no office is selected
+        departmentEl.innerHTML = '<option value="">Select Department</option>';
+        departmentEl.disabled = false;
+      }
+    });
     
     // Save employees array to local storage
     function saveEmployees() {
@@ -179,6 +212,10 @@
         const companyCell = document.createElement('td');
         companyCell.textContent = emp.company;
         row.appendChild(companyCell);
+        
+        const officeCell = document.createElement('td');
+        officeCell.textContent = emp.office;
+        row.appendChild(officeCell);
         
         const deptCell = document.createElement('td');
         deptCell.textContent = emp.department;
@@ -196,11 +233,15 @@
         newIdCell.textContent = emp.newEmpId;
         row.appendChild(newIdCell);
         
+        const attIdCell = document.createElement('td');
+        attIdCell.textContent = emp.attId;
+        row.appendChild(attIdCell);
+        
         const nameCell = document.createElement('td');
         nameCell.textContent = emp.empName;
         row.appendChild(nameCell);
         
-        // Action cell with Edit (and optionally Delete) buttons
+        // Action cell with Edit and Delete buttons
         const actionCell = document.createElement('td');
         
         // Edit Button
@@ -234,10 +275,16 @@
     function loadEmployeeIntoForm(index) {
       const emp = employees[index];
       companyEl.value = emp.company;
+      officeEl.value = emp.office;
+      
+      // Trigger change event for office dropdown to update department field
+      officeEl.dispatchEvent(new Event('change'));
+      
       departmentEl.value = emp.department;
       designationEl.value = emp.designation;
       oldEmpIdEl.value = emp.oldEmpId;
       newEmpIdEl.value = emp.newEmpId;
+      attIdEl.value = emp.attId;
       empNameEl.value = emp.empName;
       empIndex.value = index;
     }
@@ -247,15 +294,17 @@
       e.preventDefault();
       
       const company = companyEl.value;
+      const office = officeEl.value;
       const department = departmentEl.value;
       const designation = designationEl.value;
       const oldEmpId = oldEmpIdEl.value.trim();
       const newEmpId = newEmpIdEl.value.trim();
+      const attId = attIdEl.value.trim();
       const empName = empNameEl.value.trim();
       const index = parseInt(empIndex.value, 10);
       
-      if (company && department && designation && oldEmpId && newEmpId && empName) {
-        const empData = { company, department, designation, oldEmpId, newEmpId, empName };
+      if (company && office && department && designation && oldEmpId && newEmpId && attId && empName) {
+        const empData = { company, office, department, designation, oldEmpId, newEmpId, attId, empName };
         if (index === -1) {
           // Add new employee
           employees.push(empData);
@@ -267,6 +316,8 @@
         renderEmployeeTable();
         employeeForm.reset();
         empIndex.value = -1;
+        // Re-enable department dropdown if it was disabled
+        departmentEl.disabled = false;
       }
     });
     
