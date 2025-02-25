@@ -44,7 +44,8 @@ function createMainWindow() {
         {
           label: 'Employ Master',
           click: () => {
-            mainWindow.webContents.send('menu-selection', 'employ');
+            mainWindow.loadFile('employe.html');
+
           }
         },
         {
