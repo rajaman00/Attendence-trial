@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Main App - Electron</title>
+</head>
+
+<body>
+  <h1>Welcome to My Electron App!</h1>
+  <p>You've successfully logged in.</p>
+
+
+  <script>
+    // In a renderer script included in index.html
+const { ipcRenderer } = require('electron');
+
+ipcRenderer.on('menu-selection', (event, selection) => {
+  switch (selection) {
+    case 'designation':
+      // Load or display the Designation Master content
+      console.log('Designation Master selected');
+      break;
+    case 'employ':
+      // Load or display the Employ Master content
+      console.log('Employ Master selected');
+      break;
+    case 'department':
+      // Load or display the Department Master content
+      console.log('Department Master selected');
+      break;
+    default:
+      break;
+  }
+});
+
+  </script>
+</body>
+
+</html>

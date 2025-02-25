@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Department Master</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .form-container, .data-container {
+      margin-bottom: 30px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input, select {
+      padding: 8px;
+      width: 300px;
+      max-width: 100%;
+    }
+    button {
+      padding: 8px 16px;
+      margin-top: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+    .action-btn {
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    .edit-btn {
+      color: blue;
+    }
+    .delete-btn {
+      color: red;
+    }
+    .action-btn:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Department Master</h1>
+
+  <!-- Form Section -->
+  <div class="form-container">
+    <h2>Add / Edit Department</h2>
+    <form id="departmentForm">
+      <input type="hidden" id="deptIndex" value="-1" />
+      <label for="deptName">Department Name:</label>
+      <input type="text" id="deptName" required />
+
+      <label for="hod">Head of Department:</label>
+      <select id="hod" required>
+        <option value="">Select Head</option>
+        <option value="Alice Johnson">Alice Johnson</option>
+        <option value="Bob Smith">Bob Smith</option>
+        <option value="Carol White">Carol White</option>
+      </select>
+
+      <label for="deptEmail">Email:</label>
+      <input type="email" id="deptEmail" required />
+
+      <button type="submit">Save Department</button>
+    </form>
+  </div>
+
+  <!-- Data Table Section -->
+  <div class="data-container">
+    <h2>Department List</h2>
+    <table id="deptTable">
+      <thead>
+        <tr>
+          <th>Department Name</th>
+          <th>Head of Department</th>
+          <th>Email</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Data rows will be dynamically added here -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Key for local storage
+    const STORAGE_KEY = 'departmentsData';
+
+    // Array to hold department data (loaded from local storage)
+    let departments = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+    // DOM element references
+    const departmentForm = document.getElementById('departmentForm');
+    const deptName = document.getElementById('deptName');
+    const hod = document.getElementById('hod');
+    const deptEmail = document.getElementById('deptEmail');
+    const deptIndex = document.getElementById('deptIndex');
+    const deptTableBody = document.getElementById('deptTable').querySelector('tbody');
+
+    // Render the department table on page load
+    renderTable();
+
+    // Save departments array to local storage
+    function saveToLocalStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(departments));
+    }
+
+    // Form submit handler
+    departmentForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const name = deptName.value.trim();
+      const head = hod.value;
+      const email = deptEmail.value.trim();
+      const index = parseInt(deptIndex.value, 10);
+
+      if (name && head && email) {
+        const deptData = { name, head, email };
+
+        if (index === -1) {
+          // Add new department
+          departments.push(deptData);
+        } else {
+          // Update existing department
+          departments[index] = deptData;
+        }
+
+        // Save updated departments to local storage
+        saveToLocalStorage();
+        // Update table view
+        renderTable();
+        // Reset the form
+        departmentForm.reset();
+        deptIndex.value = -1;
+      }
+    });
+
+    // Function to render the department table
+    function renderTable() {
+      // Clear table rows
+      deptTableBody.innerHTML = '';
+
+      departments.forEach((dept, i) => {
+        const row = document.createElement('tr');
+
+        // Department Name Cell
+        const nameCell = document.createElement('td');
+        nameCell.textContent = dept.name;
+        row.appendChild(nameCell);
+
+        // Head of Department Cell
+        const headCell = document.createElement('td');
+        headCell.textContent = dept.head;
+        row.appendChild(headCell);
+
+        // Email Cell
+        const emailCell = document.createElement('td');
+        emailCell.textContent = dept.email;
+        row.appendChild(emailCell);
+
+        // Action Cell for editing and deleting
+        const actionCell = document.createElement('td');
+
+        // Edit Button
+        const editButton = document.createElement('span');
+        editButton.textContent = 'Edit';
+        editButton.classList.add('action-btn', 'edit-btn');
+        editButton.addEventListener('click', () => {
+          loadDepartmentIntoForm(i);
+        });
+        actionCell.appendChild(editButton);
+
+        // Delete Button
+        const deleteButton = document.createElement('span');
+        deleteButton.textContent = 'Delete';
+        deleteButton.classList.add('action-btn', 'delete-btn');
+        deleteButton.addEventListener('click', () => {
+          deleteDepartment(i);
+        });
+        actionCell.appendChild(deleteButton);
+
+        row.appendChild(actionCell);
+
+        deptTableBody.appendChild(row);
+      });
+    }
+
+    // Function to load department data into the form for editing
+    function loadDepartmentIntoForm(index) {
+      const dept = departments[index];
+      deptName.value = dept.name;
+      hod.value = dept.head;
+      deptEmail.value = dept.email;
+      deptIndex.value = index;
+    }
+
+    // Function to delete a department
+    function deleteDepartment(index) {
+      if (confirm("Are you sure you want to delete this department?")) {
+        departments.splice(index, 1);
+        saveToLocalStorage();
+        renderTable();
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Designation Master</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .form-container, .data-container {
+      margin-bottom: 30px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input {
+      padding: 8px;
+      width: 300px;
+      max-width: 100%;
+    }
+    button {
+      padding: 8px 16px;
+      margin-top: 15px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      padding: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .delete-btn {
+      color: red;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Designation Master</h1>
+
+  <!-- Form Section -->
+  <div class="form-container">
+    <h2>Add Designation</h2>
+    <form id="designationForm">
+      <label for="designationInput">Designation:</label>
+      <input type="text" id="designationInput" placeholder="Enter designation" required />
+      <button type="submit">Add Designation</button>
+    </form>
+  </div>
+
+  <!-- Data List Section -->
+  <div class="data-container">
+    <h2>Designation List</h2>
+    <ul id="designationList">
+      <!-- Designation items will be added here -->
+    </ul>
+  </div>
+
+  <script>
+    // Key for local storage
+    const STORAGE_KEY = 'designationData';
+    
+    // Array to hold designation data (loaded from local storage)
+    let designations = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    
+    // DOM element references
+    const designationForm = document.getElementById('designationForm');
+    const designationInput = document.getElementById('designationInput');
+    const designationList = document.getElementById('designationList');
+
+    // Function to save designations to local storage
+    function saveDesignations() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(designations));
+    }
+
+    // Function to render the designation list
+    function renderDesignationList() {
+      designationList.innerHTML = '';
+      designations.forEach((designation, index) => {
+        const li = document.createElement('li');
+        li.textContent = designation;
+        
+        // Delete button for each designation
+        const deleteBtn = document.createElement('span');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.classList.add('delete-btn');
+        deleteBtn.addEventListener('click', () => {
+          if (confirm('Are you sure you want to delete this designation?')) {
+            designations.splice(index, 1);
+            saveDesignations();
+            renderDesignationList();
+          }
+        });
+        
+        li.appendChild(deleteBtn);
+        designationList.appendChild(li);
+      });
+    }
+
+    // Initial render on page load
+    renderDesignationList();
+
+    // Form submit handler to add a new designation
+    designationForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newDesignation = designationInput.value.trim();
+      if (newDesignation) {
+        designations.push(newDesignation);
+        saveDesignations();
+        renderDesignationList();
+        designationForm.reset();
+      }
+    });
+  </script>
+</body>
+</html>
